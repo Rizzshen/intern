@@ -24,7 +24,7 @@ app.post('/login',async(req,res)=>{
 });
 app.get('/items',(req,res)=>{
     res.sendFile(__dirname + '/items.html');
-    const {name} = req.body;
+    const {name} = req.query.items;
 
 })
 
