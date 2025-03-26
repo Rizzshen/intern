@@ -11,7 +11,13 @@ const personSchema = new mongoose.Schema({
   username: { type: String, required: true },
   password:{type: String, required: true}
 });
+
 const Person = mongoose.model('Person', personSchema);
+
+const itemsSchema = new mongoose.Schema({
+    items:{type: String, required: true}
+});
+const Items = mongoose.model('Items', itemsSchema);
 
 app.use(express.urlencoded({ extended: true }));
 app.get('/', function(req, res){
@@ -24,9 +30,20 @@ app.post('/login',async(req,res)=>{
 });
 app.get('/items',(req,res)=>{
     res.sendFile(__dirname + '/items.html');
-    const {name} = req.query.items;
+
+});
+//create items
+app.post('/items', async(req,res)=>{
+    let items = new Items({items: req.body.items});
+    let item = await items.save();
+    res.json({"items": item.items});
 
 })
+//search items
+app.get("/items/:item?", async(req, res)=>{
+    let item = await Items.find({items: req.params.item});
+    res.json({item: item.item});
+});
 
 app.listen(PORT, function (err) {
     if (err) console.error(err);
