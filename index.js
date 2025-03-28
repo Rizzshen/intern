@@ -3,9 +3,7 @@ const app = express();
 const PORT = 3000;
 require("dotenv").config();
 const mongoose = require("mongoose");
-mongoose.connect(
-  process.env.MONGO_URI
-);
+mongoose.connect(process.env.MONGO_URI);
 console.log("mongo Db connected");
 const { Person, Product } = require("./product.model.js");
 
@@ -39,17 +37,46 @@ app.post("/items", async (req, res) => {
     res.status(500).json(error);
   }
 });
-//search items
+//read items
 app.get("/api/items/:item?", async (req, res) => {
-    let items;
-    if(req.params.item){
-        items = await Product.findById(req.params.item);
+  let items;
+  if (req.params.item) {
+    items = await Product.findById(req.params.item);
+  } else {
+    items = await Product.find({});
+  }
+
+  res.json({ items: items });
+});
+//update items
+app.put("/items/:item", async (req, res) => {
+  try {
+    let { item } = req.params;
+    let id = await Product.findById(item);
+    console.log(id);
+    const update = await Product.findByIdAndUpdate(id, req.body);
+    if (!update) {
+      return res.status(404).json({ message: "Product no found" });
     }
-    else{
-        items = await Product.find({});
+    const updatedProduct = await Product.findById(id);
+    res.status(200).json(updatedProduct);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+app.delete("/item/:item", async (req, res) => {
+  try {
+    let id = req.params.item;
+
+    const del = await Product.findByIdAndDelete(id);
+    if (!del) {
+      return res.status(404).json({ message: "no id found" });
     }
-  
-    res.json({ items: items });
+    res.status(200).json({ message: "product deleted successfully" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "no deleted" });
+  }
 });
 
 app.listen(PORT, function (err) {
